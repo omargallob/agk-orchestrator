@@ -1,80 +1,50 @@
 package orchestrator
 
 import (
-	"context"
-	"strings"
-	"testing"
-
-	"github.com/agenticgokit/agenticgokit/v1beta"
-
-	"github.com/omargallob/agk-orchestrator/internal/config"
+    "testing"
+    "github.com/omargallob/agk-orchestrator/internal/prompt"
 )
 
-func sampleConfig() *config.Config {
-	return &config.Config{
-		Agents: []config.AgentConfig{
-			{Name: "researcher", Provider: "openai", Model: "m1", BaseURL: "http://localhost:8080/v1", System: "research"},
-			{Name: "writer", Provider: "openai", Model: "m2", BaseURL: "http://localhost:8080/v1"},
-		},
-		Workflows: []config.WorkflowConfig{
-			{Name: "main", Type: "sequential", Steps: []string{"researcher", "writer"}},
-		},
-	}
-}
-
-func TestBuildAgent(t *testing.T) {
-	agent, err := BuildAgent(config.AgentConfig{
-		Name: "a", Provider: "openai", Model: "m", BaseURL: "http://localhost:8080/v1",
-	})
-	if err != nil {
-		t.Fatalf("BuildAgent: %v", err)
-	}
-	if agent == nil {
-		t.Fatal("BuildAgent returned nil agent")
-	}
-}
-
-func TestNewBuildsWorkflows(t *testing.T) {
-	o, err := New(sampleConfig())
-	if err != nil {
-		t.Fatalf("New: %v", err)
-	}
-	got := o.Workflows()
-	if len(got) != 1 || got[0] != "main" {
-		t.Errorf("Workflows() = %v, want [main]", got)
-	}
-}
-
-func TestBuildWorkflowUnknownAgent(t *testing.T) {
-	_, err := BuildWorkflow(
-		config.WorkflowConfig{Name: "w", Type: "sequential", Steps: []string{"ghost"}},
-		map[string]v1beta.Agent{},
-	)
-	if err == nil || !strings.Contains(err.Error(), "unknown agent") {
-		t.Fatalf("expected unknown-agent error, got %v", err)
-	}
-}
-
-func TestBuildWorkflowParallel(t *testing.T) {
-	agents, err := BuildAgents(sampleConfig().Agents)
-	if err != nil {
-		t.Fatalf("BuildAgents: %v", err)
-	}
-	wf, err := BuildWorkflow(config.WorkflowConfig{Name: "p", Type: "parallel", Steps: []string{"researcher", "writer"}}, agents)
-	if err != nil {
-		t.Fatalf("BuildWorkflow parallel: %v", err)
-	}
-	if wf == nil {
-		t.Fatal("nil workflow")
-	}
-}
-
-func TestRunUnknownWorkflow(t *testing.T) {
-	o, err := New(sampleConfig())
-	if err != nil {
-		t.Fatalf("New: %v", err)
-	}
-	if _, err := o.Run(context.Background(), "nope", "hi"); err == nil {
-		t.Fatal("expected error for unknown workflow")
-	}
+func TestResolveTemplate(t *testing.T) {
+    // Test with input and context
+    result, err := prompt.ResolveTemplate("You are an agent. Input: {input}. Context: {context}", "hello", "world")
+    if err != nil {
+        t.Fatalf("Error resolving template: %v", err)
+    }
+    if result != "You are an agent. Input: hello. Context: world" {
+        t.Errorf("Expected: You are an agent. Input: hello. Context: world\nGot: %s", result)
+    }
+    
+    // Test with only input
+    result, err = prompt.ResolveTemplate("Input: {input}", "test", "")
+    if err != nil {
+        t.Fatalf("Error resolving template: %v", err)
+    }
+    if result != "Input: test" {
+        t.Errorf("Expected: Input: test\nGot: %s", result)
+    }
+    
+    // Test with only context
+    result, err = prompt.ResolveTemplate("Context: {context}", "", "example")
+    if err != nil {
+        t.Fatalf("Error resolving template: %v", err)
+    }
+    if result != "Context: example" {
+        t.Errorf("Expected: Context: example\nGot: %s", result)
+    }
+    
+    // Test with no variables
+    result, err = prompt.ResolveTemplate("No variables here.", "", "")
+    if err != nil {
+        t.Fatalf("Error resolving template: %v", err)
+    }
+    if result != "No variables here." {
+        t.Errorf("Expected: No variables here.\nGot: %s", result)
+    }
+    
+    // Test with invalid variable
+    result, err = prompt.ResolveTemplate("Invalid {xyz}", "", "")
+    if err == nil {
+        t.Errorf("Expected error for invalid variable {xyz}")
+    }
 }

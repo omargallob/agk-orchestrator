@@ -81,14 +81,14 @@ func BuildAgents(cfgs []config.AgentConfig) (map[string]v1beta.Agent, error) {
 func BuildAgent(a config.AgentConfig) (v1beta.Agent, error) {
 	cfg := &v1beta.Config{
 		Name:         a.Name,
-		SystemPrompt: a.System,
-		Timeout:      defaultAgentTimeout,
-		LLM: v1beta.LLMConfig{
-			Provider: a.Provider,
-			Model:    a.Model,
-			BaseURL:  a.BaseURL,
-			APIKey:   placeholderAPIKey,
-		},
+    SystemPrompt: resolveTemplate(a.PromptTemplate, input, context),
+    Timeout:      defaultAgentTimeout,
+    LLM: v1beta.LLMConfig{
+        Provider: a.Provider,
+        Model:    a.Model,
+        BaseURL:  a.BaseURL,
+        APIKey:   placeholderAPIKey,
+    },
 		// Memory/RAG is out of scope for v1; keep agents lightweight.
 		Memory: &v1beta.MemoryConfig{Enabled: false},
 	}
