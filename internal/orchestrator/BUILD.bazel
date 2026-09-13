@@ -1,0 +1,22 @@
+load("@rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "orchestrator",
+    srcs = ["orchestrator.go"],
+    importpath = "github.com/omargallob/agk-orchestrator/internal/orchestrator",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//internal/config",
+        "@com_github_agenticgokit_agenticgokit//v1beta",
+    ],
+)
+
+go_test(
+    name = "orchestrator_test",
+    srcs = ["orchestrator_test.go"],
+    embed = [":orchestrator"],
+    deps = [
+        "//internal/config",
+        "@com_github_agenticgokit_agenticgokit//v1beta",
+    ],
+)
