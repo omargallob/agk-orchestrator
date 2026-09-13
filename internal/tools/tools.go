@@ -72,8 +72,10 @@ func (r *Registry) Names() []string {
 
 type fetchTool struct{ client *http.Client }
 
-func (fetchTool) Name() string        { return "fetch" }
-func (fetchTool) Description() string { return "HTTP GET a URL and return the response body. Args: url." }
+func (fetchTool) Name() string { return "fetch" }
+func (fetchTool) Description() string {
+	return "HTTP GET a URL and return the response body. Args: url."
+}
 
 func (t *fetchTool) Execute(ctx context.Context, args map[string]string) (string, error) {
 	url := args["url"]

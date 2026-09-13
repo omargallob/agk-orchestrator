@@ -1,0 +1,14 @@
+load("@rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "prompt",
+    srcs = ["template.go"],
+    importpath = "github.com/omargallob/agk-orchestrator/internal/prompt",
+    visibility = ["//:__subpackages__"],
+)
+
+go_test(
+    name = "prompt_test",
+    srcs = ["template_test.go"],
+    embed = [":prompt"],
+)

@@ -50,16 +50,17 @@ func TestParseErrors(t *testing.T) {
 		toml string
 		want string
 	}{
-		"malformed":         {"[[agents]] name = ", "parse config"},
-		"no agents":         {`[tools]` + "\nenabled = []", "at least one"},
-		"missing model":     {"[[agents]]\nname=\"a\"\nbase_url=\"http://x/v1\"", "model is required"},
-		"missing base_url":  {"[[agents]]\nname=\"a\"\nmodel=\"m\"", "base_url is required"},
-		"bad provider":      {"[[agents]]\nname=\"a\"\nprovider=\"anthropic\"\nmodel=\"m\"\nbase_url=\"http://x/v1\"", "unsupported provider"},
-		"dup agent":         {"[[agents]]\nname=\"a\"\nmodel=\"m\"\nbase_url=\"http://x/v1\"\n[[agents]]\nname=\"a\"\nmodel=\"m\"\nbase_url=\"http://x/v1\"", "duplicate agent"},
-		"bad wf type":       {"[[agents]]\nname=\"a\"\nmodel=\"m\"\nbase_url=\"http://x/v1\"\n[[workflows]]\nname=\"w\"\ntype=\"dag\"\nsteps=[\"a\"]", "unsupported type"},
-		"wf unknown step":   {"[[agents]]\nname=\"a\"\nmodel=\"m\"\nbase_url=\"http://x/v1\"\n[[workflows]]\nname=\"w\"\nsteps=[\"nope\"]", "unknown agent"},
-		"wf no steps":       {"[[agents]]\nname=\"a\"\nmodel=\"m\"\nbase_url=\"http://x/v1\"\n[[workflows]]\nname=\"w\"\nsteps=[]", "at least one step"},
-		"unknown tool":      {"[[agents]]\nname=\"a\"\nmodel=\"m\"\nbase_url=\"http://x/v1\"\n[tools]\nenabled=[\"rm\"]", "unknown tool"},
+		"malformed":        {"[[agents]] name = ", "parse config"},
+		"no agents":        {`[tools]` + "\nenabled = []", "at least one"},
+		"missing model":    {"[[agents]]\nname=\"a\"\nbase_url=\"http://x/v1\"", "model is required"},
+		"missing base_url": {"[[agents]]\nname=\"a\"\nmodel=\"m\"", "base_url is required"},
+		"bad provider":     {"[[agents]]\nname=\"a\"\nprovider=\"anthropic\"\nmodel=\"m\"\nbase_url=\"http://x/v1\"", "unsupported provider"},
+		"dup agent":        {"[[agents]]\nname=\"a\"\nmodel=\"m\"\nbase_url=\"http://x/v1\"\n[[agents]]\nname=\"a\"\nmodel=\"m\"\nbase_url=\"http://x/v1\"", "duplicate agent"},
+		"bad wf type":      {"[[agents]]\nname=\"a\"\nmodel=\"m\"\nbase_url=\"http://x/v1\"\n[[workflows]]\nname=\"w\"\ntype=\"dag\"\nsteps=[\"a\"]", "unsupported type"},
+		"wf unknown step":  {"[[agents]]\nname=\"a\"\nmodel=\"m\"\nbase_url=\"http://x/v1\"\n[[workflows]]\nname=\"w\"\nsteps=[\"nope\"]", "unknown agent"},
+		"wf no steps":      {"[[agents]]\nname=\"a\"\nmodel=\"m\"\nbase_url=\"http://x/v1\"\n[[workflows]]\nname=\"w\"\nsteps=[]", "at least one step"},
+		"unknown tool":     {"[[agents]]\nname=\"a\"\nmodel=\"m\"\nbase_url=\"http://x/v1\"\n[tools]\nenabled=[\"rm\"]", "unknown tool"},
+		"system+template":  {"[[agents]]\nname=\"a\"\nmodel=\"m\"\nbase_url=\"http://x/v1\"\nsystem=\"s\"\nprompt_template=\"t\"", "not both"},
 	}
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {

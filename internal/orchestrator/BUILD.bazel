@@ -7,6 +7,7 @@ go_library(
     visibility = ["//:__subpackages__"],
     deps = [
         "//internal/config",
+        "//internal/prompt",
         "@com_github_agenticgokit_agenticgokit//v1beta",
     ],
 )
