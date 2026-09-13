@@ -1,0 +1,21 @@
+load("@rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "e2e",
+    srcs = ["e2e.go"],
+    embedsrcs = [
+        "orchestrator.toml",
+        "sample-repo/README.md",
+        "sample-repo/inventory.py",
+        "sample-repo/pricing.py",
+    ],
+    importpath = "github.com/omargallob/agk-orchestrator/e2e",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "e2e_test",
+    srcs = ["e2e_test.go"],
+    embed = [":e2e"],
+    deps = ["//internal/config"],
+)
