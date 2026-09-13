@@ -11,6 +11,7 @@ import (
 	"github.com/agenticgokit/agenticgokit/v1beta"
 
 	"github.com/omargallob/agk-orchestrator/internal/config"
+	"github.com/omargallob/agk-orchestrator/internal/prompt"
 )
 
 // placeholderAPIKey satisfies AgenticGoKit's OpenAI-compatible adapter, which
@@ -81,7 +82,7 @@ func BuildAgents(cfgs []config.AgentConfig) (map[string]v1beta.Agent, error) {
 func BuildAgent(a config.AgentConfig) (v1beta.Agent, error) {
 	cfg := &v1beta.Config{
 		Name:         a.Name,
-		SystemPrompt: a.System,
+		SystemPrompt: resolveSystemPrompt(a),
 		Timeout:      defaultAgentTimeout,
 		LLM: v1beta.LLMConfig{
 			Provider: a.Provider,
@@ -97,6 +98,25 @@ func BuildAgent(a config.AgentConfig) (v1beta.Agent, error) {
 		return nil, fmt.Errorf("build agent %q: %w", a.Name, err)
 	}
 	return agent, nil
+}
+
+// resolveSystemPrompt returns the agent's system prompt: the static System, or,
+// if PromptTemplate is set, the template resolved with built-in vars ({agent},
+// {model}, {provider}, {base_url}) plus the agent's Vars.
+func resolveSystemPrompt(a config.AgentConfig) string {
+	if a.PromptTemplate == "" {
+		return a.System
+	}
+	vars := map[string]string{
+		"agent":    a.Name,
+		"model":    a.Model,
+		"provider": a.Provider,
+		"base_url": a.BaseURL,
+	}
+	for k, v := range a.Vars {
+		vars[k] = v
+	}
+	return prompt.Resolve(a.PromptTemplate, vars)
 }
 
 // BuildWorkflow assembles a v1beta workflow from a WorkflowConfig and the built

@@ -69,6 +69,26 @@ func TestBuildWorkflowParallel(t *testing.T) {
 	}
 }
 
+func TestResolveSystemPrompt(t *testing.T) {
+	// Static system prompt passes through.
+	if got := resolveSystemPrompt(config.AgentConfig{System: "hello"}); got != "hello" {
+		t.Errorf("static = %q", got)
+	}
+	// Template with built-in vars + user vars.
+	a := config.AgentConfig{
+		Name:           "researcher",
+		Provider:       "openai",
+		Model:          "qwen",
+		BaseURL:        "http://x/v1",
+		PromptTemplate: "You are {agent} using {model}. Focus: {focus}.",
+		Vars:           map[string]string{"focus": "biology"},
+	}
+	want := "You are researcher using qwen. Focus: biology."
+	if got := resolveSystemPrompt(a); got != want {
+		t.Errorf("template = %q, want %q", got, want)
+	}
+}
+
 func TestRunUnknownWorkflow(t *testing.T) {
 	o, err := New(sampleConfig())
 	if err != nil {

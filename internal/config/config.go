@@ -33,7 +33,13 @@ type AgentConfig struct {
 	Provider string `toml:"provider"` // "openai" (default) or "vllm"
 	Model    string `toml:"model"`
 	BaseURL  string `toml:"base_url"` // mlx_lm.server /v1 endpoint
-	System   string `toml:"system"`   // optional system prompt
+	System   string `toml:"system"`   // optional static system prompt
+
+	// PromptTemplate is an alternative to System that supports {var} placeholders
+	// resolved at build time from built-in vars ({agent},{model},{provider},
+	// {base_url}) plus Vars. Set System or PromptTemplate, not both.
+	PromptTemplate string            `toml:"prompt_template"`
+	Vars           map[string]string `toml:"vars"`
 }
 
 // WorkflowConfig wires agents into a sequential or parallel workflow.
@@ -104,6 +110,8 @@ func (c *Config) Validate() error {
 			return fmt.Errorf("agent %q: model is required", a.Name)
 		case a.BaseURL == "":
 			return fmt.Errorf("agent %q: base_url is required (the mlx_lm.server /v1 endpoint)", a.Name)
+		case a.System != "" && a.PromptTemplate != "":
+			return fmt.Errorf("agent %q: set either system or prompt_template, not both", a.Name)
 		}
 		agents[a.Name] = true
 	}
