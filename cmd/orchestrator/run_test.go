@@ -46,13 +46,13 @@ steps = ["a"]
 }
 
 func TestResolveRunMissingConfig(t *testing.T) {
-	if _, _, _, err := resolveRun("", "", nil, strings.NewReader("")); err == nil || !strings.Contains(err.Error(), "--config") {
+	if _, _, _, err := resolveRun("", "", "", nil, strings.NewReader("")); err == nil || !strings.Contains(err.Error(), "--config") {
 		t.Fatalf("want --config error, got %v", err)
 	}
 }
 
 func TestResolveRunFromArg(t *testing.T) {
-	o, wf, input, err := resolveRun(writeConfig(t), "", []string{"hello", "world"}, strings.NewReader(""))
+	o, wf, input, err := resolveRun(writeConfig(t), "", "", []string{"hello", "world"}, strings.NewReader(""))
 	if err != nil {
 		t.Fatalf("resolveRun: %v", err)
 	}
@@ -62,7 +62,7 @@ func TestResolveRunFromArg(t *testing.T) {
 }
 
 func TestResolveRunFromStdin(t *testing.T) {
-	_, wf, input, err := resolveRun(writeConfig(t), "main", nil, strings.NewReader("from stdin\n"))
+	_, wf, input, err := resolveRun(writeConfig(t), "main", "", nil, strings.NewReader("from stdin\n"))
 	if err != nil {
 		t.Fatalf("resolveRun: %v", err)
 	}
@@ -72,7 +72,7 @@ func TestResolveRunFromStdin(t *testing.T) {
 }
 
 func TestResolveRunEmptyInput(t *testing.T) {
-	if _, _, _, err := resolveRun(writeConfig(t), "", nil, strings.NewReader("   ")); err == nil || !strings.Contains(err.Error(), "no input") {
+	if _, _, _, err := resolveRun(writeConfig(t), "", "", nil, strings.NewReader("   ")); err == nil || !strings.Contains(err.Error(), "no input") {
 		t.Fatalf("want no-input error, got %v", err)
 	}
 }

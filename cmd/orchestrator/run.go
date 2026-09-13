@@ -18,11 +18,12 @@ func cmdRun(ctx context.Context, args []string, stdin io.Reader, stdout, stderr 
 	fs.SetOutput(stderr)
 	configPath := fs.String("config", "", "path to the orchestrator TOML config (required)")
 	workflow := fs.String("workflow", "", "workflow to run (default: the only one if a single workflow is defined)")
+	repo := fs.String("repo", "", "repo root the file/list/grep/shell tools are confined to (overrides [tools].root)")
 	if err := fs.Parse(args); err != nil {
 		return 2
 	}
 
-	o, wf, input, err := resolveRun(*configPath, *workflow, fs.Args(), stdin)
+	o, wf, input, err := resolveRun(*configPath, *workflow, *repo, fs.Args(), stdin)
 	if err != nil {
 		fmt.Fprintf(stderr, "error: %v\n", err)
 		return 1
@@ -43,13 +44,18 @@ func cmdRun(ctx context.Context, args []string, stdin io.Reader, stdout, stderr 
 
 // resolveRun loads config, builds the orchestrator, and resolves the workflow
 // and input. Separated from network execution so it is unit-testable.
-func resolveRun(configPath, workflow string, promptArgs []string, stdin io.Reader) (*orchestrator.Orchestrator, string, string, error) {
+func resolveRun(configPath, workflow, repoRoot string, promptArgs []string, stdin io.Reader) (*orchestrator.Orchestrator, string, string, error) {
 	if configPath == "" {
 		return nil, "", "", fmt.Errorf("--config is required")
 	}
 	cfg, err := config.Load(configPath)
 	if err != nil {
 		return nil, "", "", err
+	}
+	// --repo overrides the config's tool root, so the same config can be pointed
+	// at any cloned repo.
+	if repoRoot != "" {
+		cfg.Tools.Root = repoRoot
 	}
 	o, err := orchestrator.New(cfg)
 	if err != nil {

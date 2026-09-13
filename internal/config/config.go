@@ -17,7 +17,7 @@ var validProviders = map[string]bool{"openai": true, "vllm": true}
 var validWorkflowTypes = map[string]bool{"sequential": true, "parallel": true}
 
 // validTools are the built-in orchestrator tools.
-var validTools = map[string]bool{"fetch": true, "file": true, "shell": true}
+var validTools = map[string]bool{"fetch": true, "file": true, "list": true, "grep": true, "shell": true}
 
 // Config is the top-level orchestrator configuration.
 type Config struct {
@@ -76,6 +76,10 @@ type WorkflowConfig struct {
 type ToolsConfig struct {
 	Enabled   []string `toml:"enabled"`
 	Allowlist []string `toml:"allowlist"`
+	// Root confines the filesystem tools (file, list, grep) and shell to a
+	// directory — typically the cloned repo. Empty means the current directory.
+	// The `run --repo` flag overrides it.
+	Root string `toml:"root"`
 }
 
 // Load reads and validates a TOML config file.
