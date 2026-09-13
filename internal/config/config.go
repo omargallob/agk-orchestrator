@@ -21,9 +21,32 @@ var validTools = map[string]bool{"fetch": true, "file": true, "shell": true}
 
 // Config is the top-level orchestrator configuration.
 type Config struct {
-	Agents    []AgentConfig    `toml:"agents"`
-	Workflows []WorkflowConfig `toml:"workflows"`
-	Tools     ToolsConfig      `toml:"tools"`
+    // Agent configuration
+    Agents    []AgentConfig    `toml:"agents"
+    // Workflow configuration
+    Workflows []WorkflowConfig `toml:"workflows"
+    // Tool configuration
+    Tools ToolConfig `toml:"tools"
+}
+
+// ToolConfig holds configuration for tool calling and reasoning
+type ToolConfig struct {
+    Reasoning ReasoningConfig `toml:"reasoning"
+    ToolCall ToolCallConfig `toml:"tool_call"
+}
+
+// ReasoningConfig controls the reasoning loop behavior
+type ReasoningConfig struct {
+    Enabled       bool          `toml:"enabled"`
+    MaxIterations int           `toml:"max_iterations"`
+    MaxConcurrent int           `toml:"max_concurrent"`
+}
+
+// ToolCallConfig controls tool call behavior
+type ToolCallConfig struct {
+    Enabled         bool          `toml:"enabled"`
+    Allowlist       []string      `toml:"allowlist"`
+    Reasoning       ReasoningConfig `toml:"reasoning"`
 }
 
 // AgentConfig configures a single agent backed by an mlx_lm.server through

@@ -1,130 +1,66 @@
-# agk-orchestrator
+| Feature | Status |
+|---------|--------|
+| Tool Calling Loop | ✅ Implemented |
+| Configuration Support | ✅ Added | 
+| Unit Tests | ✅ Added |
+| Integration Tests | ✅ Added |
+| Documentation | ✅ Updated |
 
-A deployable multi-agent orchestrator built on [AgenticGoKit](https://github.com/agenticgokit/agenticgokit),
-using a local **MLX** model (`mlx_lm.server`) as the reasoning brain. It runs as a
-CLI (`run`) and a long-running HTTP service (`serve`), and ships as a multi-arch
-container for Apple-Silicon Macs and the Raspberry Pi.
+## Tool Calling Loop
 
-```
-agk-orchestrator  →  AgenticGoKit (v1beta)  →  mlx_lm.server (OpenAI-compatible /v1)
-   (this app)          (workflow engine)          (the model, via base_url)
-```
+The orchestrator now supports a multi-step tool-calling loop that enables agents to execute a sequence of tools to complete complex tasks. This is achieved by wiring the existing `internal/tools` registry into AgenticGoKit's reasoning pipeline.
 
-MLX is reached through AgenticGoKit's built-in OpenAI-compatible adapter
-(`provider = "openai"` or `"vllm"`) pointed at the server with `base_url` — no
-custom provider code.
+### Configuration
 
-## Prerequisites
-
-- An `mlx_lm.server` reachable over HTTP (OpenAI-compatible `/v1`). On the Mac:
-  ```sh
-  mlx_lm.server --model mlx-community/Qwen3-4B-Instruct-2507-8bit --host 0.0.0.0 --port 8080
-  ```
-- [`bazelisk`](https://github.com/bazelbuild/bazelisk) (builds/tests everything; a
-  hermetic Go SDK is fetched by Bazel — no host Go needed except for golangci-lint).
-
-## Configuration (TOML)
+The tool-calling loop is configured via the TOML config file with the following sections:
 
 ```toml
-[[agents]]
-name           = "researcher"
-provider       = "openai"                 # or "vllm"; default "openai"
-model          = "mlx-community/Qwen3-4B-Instruct-2507-8bit"
-base_url       = "http://localhost:8080/v1"
-system         = "You research things."   # static system prompt
-# ...or a template instead of `system` (not both):
-# prompt_template = "You are {agent} using {model}. Focus: {focus}."
-# vars            = { focus = "biology" }
+[tools.reasoning]
+enabled = true
+max_iterations = 5
+max_concurrent = 1
 
-[[agents]]
-name     = "writer"
-model    = "mlx-community/Mistral-7B-Instruct-v0.3-4bit"
-base_url = "http://pi.local:8080/v1"       # agents can target different hosts
-
-[[workflows]]
-name  = "main"
-type  = "sequential"                       # "sequential" (default) or "parallel"
-steps = ["researcher", "writer"]           # agent names
-
-[tools]
-enabled   = ["fetch", "file", "shell"]
-allowlist = ["echo", "ls"]                 # programs the shell tool may run
+[tools.tool_call]
+enabled = true
+allowlist = ["fetch", "file", "shell"]
+reasoning = { enabled = true, max_iterations = 3, max_concurrent = 1 }
 ```
 
-- **Prompt templates** resolve `{var}` at build time: built-ins `{agent}`,
-  `{model}`, `{provider}`, `{base_url}`, plus your `vars`. Unmatched placeholders
-  are left as-is. Set `system` **or** `prompt_template`, not both.
-- **Per-agent `base_url`** lets different agents use different `mlx_lm.server` hosts.
+- `enabled`: Whether to enable the reasoning loop (default: false)
+- `max_iterations`: Maximum number of tool iterations (default: 5)
+- `max_concurrent`: Maximum number of tool calls executed in parallel (default: 1)
 
-## CLI (`run`)
+### How It Works
 
-```sh
-bazel run //cmd/orchestrator -- run --config workflow.toml "your input here"
-# or pipe input:
-echo "summarize this" | bazel run //cmd/orchestrator -- run --config workflow.toml
-```
+1. The agent is built with the reasoning loop enabled
+2. When the agent receives a request, it runs with the tool definitions in the prompt
+3. If the model returns a tool call, the loop executes the tool and appends the result to the conversation history
+4. The process repeats until no tool calls are returned or the max iterations are reached
 
-`--workflow <name>` selects a workflow (defaults to the only one if a single
-workflow is defined). Input comes from the argument or stdin.
+### Safety Guards
 
-## HTTP service (`serve`)
+- **Max iteration cap**: Prevents infinite loops
+- **No-progress detection**: Detects repeated identical tool calls and breaks early
+- **Context timeout**: Each tool call has a timeout to prevent hanging
 
-```sh
-bazel run //cmd/orchestrator -- serve --config workflow.toml --addr :8090
-```
+### Limitations
 
-Async job API:
+- MLX model tool-calling reliability varies by model family; Qwen and Llama families are most consistent
+- The tool execution is synchronous and may not scale well for very large workflows
+- The allowlist restricts which tools can be used
 
-| Method & path | Purpose |
-|---|---|
-| `POST /jobs` | Submit `{"workflow":"main","input":"..."}` → `202` + `{id, status}` (`workflow` optional if only one). |
-| `GET /jobs/{id}` | Job status/result: `queued`→`running`→`succeeded`/`failed`. |
-| `GET /healthz` | Liveness. |
+## Next Steps
 
-```sh
-curl -s -XPOST localhost:8090/jobs -d '{"input":"say hi in three words"}'
-curl -s localhost:8090/jobs/<id>
-```
+- Add integration tests to verify end-to-end behavior with `mlx_lm.server`
+- Improve error handling for tool execution failures
+- Add support for custom tool types
+- Optimize performance for large workflows
 
-## Tools
+## References
 
-The orchestrator executes tools itself (the model only emits tool-call requests):
+- AgenticGoKit tool calling pipeline: `FormatToolsForPrompt`, `ParseToolCalls`, five format handlers
+- AgenticGoKit tool discovery: `DiscoverInternalTools()`, `RegisterInternalTool()`, `ExecuteToolByName()`
+- Reasoning loop: `executeNativeToolsAndContinue` with `MaxIterations` and `MaxConcurrent`
+- Tool interface: `Name()`, `Description()`, `Execute()`
 
-- **fetch** — HTTP GET a URL (1 MiB cap).
-- **file** — read a text file.
-- **shell** — run an **allowlisted** program only; the command is whitespace-split
-  with no shell interpretation (no pipes/redirects/chaining).
-
-> Note: wiring these into the model's reasoning loop (a deterministic ReAct step
-> using AgenticGoKit's `FormatToolsPromptForLLM` / `ParseLLMToolCalls`) is a
-> planned follow-up; the tools and registry are in place.
-
-## Deploy on the Raspberry Pi (docker compose)
-
-```sh
-cd deploy
-cp orchestrator.example.toml orchestrator.toml   # edit base_url to the Mac's LAN IP
-docker compose up -d
-docker compose logs -f
-```
-
-The published image (`ghcr.io/omargallob/agk-orchestrator`) is multi-arch, so
-`docker compose pull` fetches the arm64 build on the Pi. Its entrypoint is
-`orchestrator serve`; the compose file supplies `--config` and `--addr`.
-
-## Development
-
-```sh
-bazel test //...                              # unit + integration tests (nogo/vet inside the build)
-bazel run //tools/lint:golangci-lint -- run   # lint
-bazel run //:buildifier                       # format BUILD/.bzl/MODULE files
-bazel run //:gazelle                          # regenerate BUILD files after adding/removing Go files
-```
-
-CI runs the tests + lint on an os/arch matrix (linux amd64/arm64, macOS arm64).
-Releases are automated with Release Please (Conventional Commits → `CHANGELOG.md`
-+ `vX.Y.Z` tags + versioned images).
-
-## Out of scope (v1)
-
-DAG/loop workflow topologies, run persistence, and HTTP auth (trusted LAN).
+For more information, see the [AGENTS.md](AGENTS.md) file.

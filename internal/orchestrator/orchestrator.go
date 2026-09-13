@@ -80,24 +80,40 @@ func BuildAgents(cfgs []config.AgentConfig) (map[string]v1beta.Agent, error) {
 // BuildAgent constructs a v1beta agent pointed at the configured mlx_lm.server
 // via base_url, using AgenticGoKit's OpenAI-compatible adapter.
 func BuildAgent(a config.AgentConfig) (v1beta.Agent, error) {
-	cfg := &v1beta.Config{
-		Name:         a.Name,
-		SystemPrompt: resolveSystemPrompt(a),
-		Timeout:      defaultAgentTimeout,
-		LLM: v1beta.LLMConfig{
-			Provider: a.Provider,
-			Model:    a.Model,
-			BaseURL:  a.BaseURL,
-			APIKey:   placeholderAPIKey,
-		},
-		// Memory/RAG is out of scope for v1; keep agents lightweight.
-		Memory: &v1beta.MemoryConfig{Enabled: false},
-	}
-	agent, err := v1beta.NewBuilder(a.Name).WithConfig(cfg).Build()
-	if err != nil {
-		return nil, fmt.Errorf("build agent %q: %w", a.Name, err)
-	}
-	return agent, nil
+    cfg := &v1beta.Config{
+        Name:         a.Name,
+        SystemPrompt: resolveSystemPrompt(a),
+        Timeout:      defaultAgentTimeout,
+        LLM: v1beta.LLMConfig{
+            Provider: a.Provider,
+            Model:    a.Model,
+            BaseURL:  a.BaseURL,
+            APIKey:   placeholderAPIKey,
+        },
+        // Memory/RAG is out of scope for v1; keep agents lightweight.
+        Memory: &v1beta.MemoryConfig{Enabled: false},
+    }
+    agent, err := v1beta.NewBuilder(a.Name).WithConfig(cfg).Build()
+    if err != nil {
+        return nil, fmt.Errorf("build agent %q: %w", a.Name, err)
+    }
+    return agent, nil
+}
+
+// buildAgentWithReasoning builds an agent with reasoning loop enabled if configured.
+func (o *Orchestrator) buildAgent(cfg config.AgentConfig) (v1beta.Agent, error) {
+    builder := v1beta.NewBuilder(cfg.Name).
+        WithPreset(v1beta.ChatAgent).
+        WithTools(v1beta.WithToolTimeout(30 * time.Second))
+
+    // Enable reasoning loop if configured
+    if cfg.Tools.Reasoning.Enabled {
+        builder = builder.WithReasoning(v1beta.ReasoningConfig{
+            MaxIterations: cfg.Tools.Reasoning.MaxIterations,
+        })
+    }
+
+    return builder.Build()
 }
 
 // resolveSystemPrompt returns the agent's system prompt: the static System, or,
