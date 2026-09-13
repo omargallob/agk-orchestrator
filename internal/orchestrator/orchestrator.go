@@ -23,6 +23,10 @@ const placeholderAPIKey = "mlx-local-no-auth"
 // requires a positive agent timeout.
 const defaultAgentTimeout = 5 * time.Minute
 
+// defaultMaxIterations bounds the reasoning loop when an agent enables reasoning
+// but sets no max_iterations. Matches AgenticGoKit's own default.
+const defaultMaxIterations = 5
+
 // Orchestrator holds the agents and workflows built from a Config.
 type Orchestrator struct {
 	agents    map[string]v1beta.Agent
@@ -92,12 +96,37 @@ func BuildAgent(a config.AgentConfig) (v1beta.Agent, error) {
 		},
 		// Memory/RAG is out of scope for v1; keep agents lightweight.
 		Memory: &v1beta.MemoryConfig{Enabled: false},
+		// Tools/reasoning: when the agent opts in, AgenticGoKit runs the
+		// tool-calling continuation loop internally; nil keeps the fast path.
+		Tools: reasoningToolsConfig(a),
 	}
 	agent, err := v1beta.NewBuilder(a.Name).WithConfig(cfg).Build()
 	if err != nil {
 		return nil, fmt.Errorf("build agent %q: %w", a.Name, err)
 	}
 	return agent, nil
+}
+
+// reasoningToolsConfig maps our per-agent reasoning config onto AgenticGoKit's
+// v1beta ToolsConfig. It returns nil when reasoning is disabled so the agent
+// stays on the single-call fast path.
+func reasoningToolsConfig(a config.AgentConfig) *v1beta.ToolsConfig {
+	r := a.Tools.Reasoning
+	if !r.Enabled {
+		return nil
+	}
+	maxIterations := r.MaxIterations
+	if maxIterations <= 0 {
+		maxIterations = defaultMaxIterations
+	}
+	return &v1beta.ToolsConfig{
+		Enabled:       true,
+		MaxConcurrent: r.MaxConcurrent,
+		Reasoning: &v1beta.ReasoningConfig{
+			Enabled:       true,
+			MaxIterations: maxIterations,
+		},
+	}
 }
 
 // resolveSystemPrompt returns the agent's system prompt: the static System, or,
