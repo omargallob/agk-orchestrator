@@ -1,66 +1,60 @@
-| Feature | Status |
-|---------|--------|
-| Tool Calling Loop | ✅ Implemented |
-| Configuration Support | ✅ Added | 
-| Unit Tests | ✅ Added |
-| Integration Tests | ✅ Added |
-| Documentation | ✅ Updated |
+# agk-orchestrator
 
-## Tool Calling Loop
+Deployable multi-agent orchestrator on [AgenticGoKit](https://github.com/agenticgokit/agenticgokit)
+using a local MLX model (`mlx_lm.server`) as the reasoning brain. MLX is reached
+via AgenticGoKit's built-in OpenAI-compatible adapter (`provider = "openai"` or
+`"vllm"`) pointed at the server with `base_url` — no custom provider.
 
-The orchestrator now supports a multi-step tool-calling loop that enables agents to execute a sequence of tools to complete complex tasks. This is achieved by wiring the existing `internal/tools` registry into AgenticGoKit's reasoning pipeline.
+## Prompt templates
 
-### Configuration
-
-The tool-calling loop is configured via the TOML config file with the following sections:
+An agent's system prompt can be a static `system` string, or a `prompt_template`
+with `{var}` placeholders resolved at build time. Built-in variables: `{agent}`,
+`{model}`, `{provider}`, `{base_url}`; add your own under `vars`. Set `system`
+**or** `prompt_template`, not both. Unmatched placeholders are left as-is.
 
 ```toml
-[tools.reasoning]
-enabled = true
-max_iterations = 5
-max_concurrent = 1
-
-[tools.tool_call]
-enabled = true
-allowlist = ["fetch", "file", "shell"]
-reasoning = { enabled = true, max_iterations = 3, max_concurrent = 1 }
+[[agents]]
+name           = "researcher"
+provider       = "openai"
+model          = "mlx-community/Qwen3-4B-Instruct-2507-8bit"
+base_url       = "http://localhost:8080/v1"
+prompt_template = "You are {agent}, a research assistant using {model}. Focus on {focus}."
+vars           = { focus = "molecular biology" }
 ```
 
-- `enabled`: Whether to enable the reasoning loop (default: false)
-- `max_iterations`: Maximum number of tool iterations (default: 5)
-- `max_concurrent`: Maximum number of tool calls executed in parallel (default: 1)
+## Tool calling & reasoning
 
-### How It Works
+By default an agent takes the fast path: a single LLM call, no continuation loop.
+Set `[agents.tools.reasoning]` to opt an agent into AgenticGoKit's multi-step
+tool-calling loop, where the model can call tools and reason over the results
+across several turns. The loop — prompt formatting, tool-call parsing, execution,
+and continuation — is provided by AgenticGoKit's v1beta pipeline; the orchestrator
+only maps this config onto it. No custom loop is reimplemented here.
 
-1. The agent is built with the reasoning loop enabled
-2. When the agent receives a request, it runs with the tool definitions in the prompt
-3. If the model returns a tool call, the loop executes the tool and appends the result to the conversation history
-4. The process repeats until no tool calls are returned or the max iterations are reached
+```toml
+[[agents]]
+name     = "assistant"
+provider = "openai"
+model    = "mlx-community/Qwen3-4B-Instruct-2507-8bit"
+base_url = "http://localhost:8080/v1"
 
-### Safety Guards
+  [agents.tools.reasoning]
+  enabled        = true   # opt into the reasoning loop (default: false → fast path)
+  max_iterations = 5      # cap on continuation turns (default: 5 when unset)
+  max_concurrent = 1      # max tools executed in parallel per turn
+```
 
-- **Max iteration cap**: Prevents infinite loops
-- **No-progress detection**: Detects repeated identical tool calls and breaks early
-- **Context timeout**: Each tool call has a timeout to prevent hanging
+Which tools exist is configured once at the top level; `shell` is gated by an
+allowlist:
 
-### Limitations
+```toml
+[tools]
+enabled   = ["fetch", "file", "shell"]
+allowlist = ["echo", "ls"]
+```
 
-- MLX model tool-calling reliability varies by model family; Qwen and Llama families are most consistent
-- The tool execution is synchronous and may not scale well for very large workflows
-- The allowlist restricts which tools can be used
-
-## Next Steps
-
-- Add integration tests to verify end-to-end behavior with `mlx_lm.server`
-- Improve error handling for tool execution failures
-- Add support for custom tool types
-- Optimize performance for large workflows
-
-## References
-
-- AgenticGoKit tool calling pipeline: `FormatToolsForPrompt`, `ParseToolCalls`, five format handlers
-- AgenticGoKit tool discovery: `DiscoverInternalTools()`, `RegisterInternalTool()`, `ExecuteToolByName()`
-- Reasoning loop: `executeNativeToolsAndContinue` with `MaxIterations` and `MaxConcurrent`
-- Tool interface: `Name()`, `Description()`, `Execute()`
+MLX tool-calling reliability varies by model family — Qwen and Llama families are
+the most consistent. `max_iterations` bounds the loop so a model that keeps
+requesting tools cannot spin forever.
 
 For more information, see the [AGENTS.md](AGENTS.md) file.

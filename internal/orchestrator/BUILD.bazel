@@ -17,6 +17,7 @@ go_test(
     srcs = [
         "integration_test.go",
         "orchestrator_test.go",
+        "reasoning_test.go",
     ],
     embed = [":orchestrator"],
     deps = [

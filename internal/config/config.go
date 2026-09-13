@@ -21,32 +21,29 @@ var validTools = map[string]bool{"fetch": true, "file": true, "shell": true}
 
 // Config is the top-level orchestrator configuration.
 type Config struct {
-    // Agent configuration
-    Agents    []AgentConfig    `toml:"agents"
-    // Workflow configuration
-    Workflows []WorkflowConfig `toml:"workflows"
-    // Tool configuration
-    Tools ToolConfig `toml:"tools"
+	Agents    []AgentConfig    `toml:"agents"`
+	Workflows []WorkflowConfig `toml:"workflows"`
+	Tools     ToolsConfig      `toml:"tools"`
 }
 
-// ToolConfig holds configuration for tool calling and reasoning
+// ToolConfig holds per-agent tool-calling and reasoning configuration.
 type ToolConfig struct {
-    Reasoning ReasoningConfig `toml:"reasoning"
-    ToolCall ToolCallConfig `toml:"tool_call"
+	Reasoning ReasoningConfig `toml:"reasoning"`
+	ToolCall  ToolCallConfig  `toml:"tool_call"`
 }
 
-// ReasoningConfig controls the reasoning loop behavior
+// ReasoningConfig controls the agent's tool-calling/continuation loop, mapped
+// onto AgenticGoKit's v1beta reasoning options at build time.
 type ReasoningConfig struct {
-    Enabled       bool          `toml:"enabled"`
-    MaxIterations int           `toml:"max_iterations"`
-    MaxConcurrent int           `toml:"max_concurrent"`
+	Enabled       bool `toml:"enabled"`
+	MaxIterations int  `toml:"max_iterations"`
+	MaxConcurrent int  `toml:"max_concurrent"`
 }
 
-// ToolCallConfig controls tool call behavior
+// ToolCallConfig controls tool call behavior.
 type ToolCallConfig struct {
-    Enabled         bool          `toml:"enabled"`
-    Allowlist       []string      `toml:"allowlist"`
-    Reasoning       ReasoningConfig `toml:"reasoning"`
+	Enabled   bool     `toml:"enabled"`
+	Allowlist []string `toml:"allowlist"`
 }
 
 // AgentConfig configures a single agent backed by an mlx_lm.server through
@@ -63,6 +60,9 @@ type AgentConfig struct {
 	// {base_url}) plus Vars. Set System or PromptTemplate, not both.
 	PromptTemplate string            `toml:"prompt_template"`
 	Vars           map[string]string `toml:"vars"`
+
+	// Tools configures this agent's tool-calling/reasoning loop.
+	Tools ToolConfig `toml:"tools"`
 }
 
 // WorkflowConfig wires agents into a sequential or parallel workflow.
