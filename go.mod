@@ -2,10 +2,12 @@ module github.com/omargallob/agk-orchestrator
 
 go 1.26.3
 
-require github.com/agenticgokit/agenticgokit v0.5.9
+require (
+	github.com/BurntSushi/toml v1.5.0
+	github.com/agenticgokit/agenticgokit v0.5.9
+)
 
 require (
-	github.com/BurntSushi/toml v1.5.0 // indirect
 	github.com/cenkalti/backoff/v5 v5.0.2 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
