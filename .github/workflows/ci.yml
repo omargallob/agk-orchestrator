@@ -93,6 +93,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload to Codecov
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: codecov/codecov-action@v5
         with:
           files: bazel-out/_coverage/_coverage_report.dat
