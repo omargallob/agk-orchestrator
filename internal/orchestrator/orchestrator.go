@@ -35,6 +35,11 @@ type Orchestrator struct {
 
 // New builds all agents and workflows described by cfg.
 func New(cfg *config.Config) (*Orchestrator, error) {
+	// Expose enabled tools to AgenticGoKit before building agents so that
+	// reasoning-enabled agents discover them.
+	if err := registerTools(cfg.Tools); err != nil {
+		return nil, err
+	}
 	agents, err := BuildAgents(cfg.Agents)
 	if err != nil {
 		return nil, err
