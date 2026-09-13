@@ -57,6 +57,7 @@ system = "You are a research assistant..."
 - After go.mod change: `go mod tidy && bazel mod tidy && bazel run //:gazelle`
 
 ## Code style
+- **Golang skills (mandatory)**: load the relevant `samber/cc-skills-golang` skill before writing or reviewing Go code — see `.opencode/skills/golang-development/SKILL.md` for the task→skill routing (also registered as the `cc-skills-golang` reference in `opencode.json`).
 - Match the surrounding code (naming, comment density, idioms); `gofmt` always.
 - Small, focused packages. Make logic testable by injecting deps (e.g. handlers take `io.Writer` + an interface), so tests need no network.
 - Don't commit binaries; keep `/bazel-*` and build artifacts gitignored.

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["AGENTS.md"],
+  "references": {
+    "cc-skills-golang": {
+      "repository": "samber/cc-skills-golang",
+      "branch": "main",
+      "description": "Use for all Golang development: code style, naming, error handling, testing, concurrency, security, performance, project layout. Load the relevant samber/cc-skills-golang skill before writing or reviewing any Go code."
+    }
+  }
+}
