@@ -2,10 +2,16 @@ load("@rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
 
 go_library(
     name = "orchestrator_lib",
-    srcs = ["main.go"],
+    srcs = [
+        "main.go",
+        "run.go",
+    ],
     importpath = "github.com/omargallob/agk-orchestrator/cmd/orchestrator",
     visibility = ["//visibility:private"],
-    deps = ["@com_github_agenticgokit_agenticgokit//v1beta"],
+    deps = [
+        "//internal/config",
+        "//internal/orchestrator",
+    ],
 )
 
 go_binary(
@@ -16,6 +22,9 @@ go_binary(
 
 go_test(
     name = "orchestrator_test",
-    srcs = ["main_test.go"],
+    srcs = [
+        "main_test.go",
+        "run_test.go",
+    ],
     embed = [":orchestrator_lib"],
 )
