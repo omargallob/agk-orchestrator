@@ -2,12 +2,16 @@ load("@rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "orchestrator",
-    srcs = ["orchestrator.go"],
+    srcs = [
+        "orchestrator.go",
+        "tools.go",
+    ],
     importpath = "github.com/omargallob/agk-orchestrator/internal/orchestrator",
     visibility = ["//:__subpackages__"],
     deps = [
         "//internal/config",
         "//internal/prompt",
+        "//internal/tools",
         "@com_github_agenticgokit_agenticgokit//v1beta",
     ],
 )
@@ -18,10 +22,12 @@ go_test(
         "integration_test.go",
         "orchestrator_test.go",
         "reasoning_test.go",
+        "tools_test.go",
     ],
     embed = [":orchestrator"],
     deps = [
         "//internal/config",
+        "//internal/tools",
         "@com_github_agenticgokit_agenticgokit//v1beta",
     ],
 )

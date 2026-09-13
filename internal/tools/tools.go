@@ -24,6 +24,16 @@ type Tool interface {
 	Description() string
 	// Execute runs the tool with string arguments and returns its textual result.
 	Execute(ctx context.Context, args map[string]string) (string, error)
+	// Parameters describes the tool's arguments so callers can build a schema
+	// for native tool calling.
+	Parameters() []Param
+}
+
+// Param describes a single tool argument.
+type Param struct {
+	Name        string
+	Description string
+	Required    bool
 }
 
 // Registry holds the enabled tools by name.
@@ -76,6 +86,9 @@ func (fetchTool) Name() string { return "fetch" }
 func (fetchTool) Description() string {
 	return "HTTP GET a URL and return the response body. Args: url."
 }
+func (fetchTool) Parameters() []Param {
+	return []Param{{Name: "url", Description: "The URL to GET.", Required: true}}
+}
 
 func (t *fetchTool) Execute(ctx context.Context, args map[string]string) (string, error) {
 	url := args["url"]
@@ -107,6 +120,9 @@ type fileTool struct{}
 
 func (fileTool) Name() string        { return "file" }
 func (fileTool) Description() string { return "Read a text file and return its contents. Args: path." }
+func (fileTool) Parameters() []Param {
+	return []Param{{Name: "path", Description: "Path to the file to read.", Required: true}}
+}
 
 func (fileTool) Execute(_ context.Context, args map[string]string) (string, error) {
 	path := args["path"]
@@ -127,6 +143,9 @@ type shellTool struct{ allowlist map[string]bool }
 func (shellTool) Name() string { return "shell" }
 func (shellTool) Description() string {
 	return "Run an allowlisted shell command and return its output. Args: command."
+}
+func (shellTool) Parameters() []Param {
+	return []Param{{Name: "command", Description: "The allowlisted command to run.", Required: true}}
 }
 
 func (t *shellTool) Execute(ctx context.Context, args map[string]string) (string, error) {
