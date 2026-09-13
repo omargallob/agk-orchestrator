@@ -7,14 +7,13 @@ on:
     paths-ignore:
       - '**/*.md'
       - '**/docs/**'
-      - '**/.github/**'
 
 permissions:
   contents: read
 
 jobs:
-  test-and-lint:
-    name: ${{ matrix.name }}
+  build:
+    name: build (${{ matrix.name }})
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
@@ -36,23 +35,71 @@ jobs:
           disk-cache: true
           repository-cache: true
 
+      - name: Build (nogo runs inside the build)
+        run: bazel build //...
+
+  lint:
+    name: lint
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Bazel (with caching)
+        uses: bazel-contrib/setup-bazel@0.14.0
+        with:
+          bazelisk-cache: true
+          disk-cache: true
+          repository-cache: true
+
       # golangci-lint typechecks with the host Go toolchain; match go.mod.
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
 
-      - name: Test (nogo runs inside the build)
-        run: bazel test //...
-
       - name: Lint Go (golangci-lint via Bazel)
         run: bazel run //tools/lint:golangci-lint -- run
 
-      # BUILD-file checks are host-agnostic; run once on linux/amd64.
       - name: Lint BUILD files (buildifier)
-        if: matrix.name == 'linux-amd64'
         run: bazel run //:buildifier.check
 
       - name: Check BUILD files are up to date (gazelle)
-        if: matrix.name == 'linux-amd64'
         run: bazel run //:gazelle -- -mode=diff
+
+  coverage:
+    name: coverage
+    needs: [lint]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Bazel (with caching)
+        uses: bazel-contrib/setup-bazel@0.14.0
+        with:
+          bazelisk-cache: true
+          disk-cache: true
+          repository-cache: true
+
+      # Runs the full test suite and collects Go coverage.
+      - name: Coverage (bazel coverage)
+        run: bazel coverage //... --combined_report=lcov
+
+      - name: Upload lcov report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-lcov-linux-amd64
+          path: bazel-out/_coverage/_coverage_report.dat
+          if-no-files-found: error
+
+      - name: Upload to Codecov
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: codecov/codecov-action@v5
+        with:
+          files: bazel-out/_coverage/_coverage_report.dat
+          flags: unittests
+          fail_ci_if_error: true
+          verbose: true
+          use_oidc: false
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

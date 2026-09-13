@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.3.0](https://github.com/omargallob/agk-orchestrator/compare/v0.2.0...v0.3.0) (2026-09-13)
+
+
+### Features
+
+* enforce cc-skills-golang for Go development ([#34](https://github.com/omargallob/agk-orchestrator/issues/34)) ([6bed29c](https://github.com/omargallob/agk-orchestrator/commit/6bed29c017cdc8d0ca7bff2e62e198f59b14b8bc))
+* implement tool-calling loop with reasoning and configuration support ([#30](https://github.com/omargallob/agk-orchestrator/issues/30)) ([46684cb](https://github.com/omargallob/agk-orchestrator/commit/46684cbfb3d8d1b1e3a8cd58bca24c45e77edc88))
+* **tools:** expose internal tools to agents via v1beta registry ([#33](https://github.com/omargallob/agk-orchestrator/issues/33)) ([ea54582](https://github.com/omargallob/agk-orchestrator/commit/ea545820e15715f25a4cd3b06afb80d15c9afdab))
+
 ## [0.2.0](https://github.com/omargallob/agk-orchestrator/compare/v0.1.0...v0.2.0) (2026-09-13)
 
 

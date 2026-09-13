@@ -1,5 +1,7 @@
 # agk-orchestrator
 
+[![codecov](https://codecov.io/gh/omargallob/agk-orchestrator/branch/main/graph/badge.svg)](https://codecov.io/gh/omargallob/agk-orchestrator)
+
 Deployable multi-agent orchestrator on [AgenticGoKit](https://github.com/agenticgokit/agenticgokit)
 using a local MLX model (`mlx_lm.server`) as the reasoning brain. MLX is reached
 via AgenticGoKit's built-in OpenAI-compatible adapter (`provider = "openai"` or

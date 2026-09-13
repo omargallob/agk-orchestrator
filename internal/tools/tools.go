@@ -320,6 +320,9 @@ func (shellTool) Description() string {
 func (shellTool) Parameters() []Param {
 	return []Param{{Name: "command", Description: "The allowlisted command to run.", Required: true}}
 }
+func (shellTool) Parameters() []Param {
+	return []Param{{Name: "command", Description: "The allowlisted command to run.", Required: true}}
+}
 
 func (t *shellTool) Execute(ctx context.Context, args map[string]string) (string, error) {
 	command := strings.TrimSpace(args["command"])
