@@ -28,8 +28,7 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	case "run":
 		return cmdRun(context.Background(), args[1:], stdin, stdout, stderr)
 	case "serve":
-		fmt.Fprintln(stderr, "orchestrator: 'serve' is not yet implemented")
-		return 2
+		return cmdServe(args[1:], stderr)
 	default:
 		fmt.Fprintf(stderr, "orchestrator: unknown command %q\n", cmd)
 		return 2

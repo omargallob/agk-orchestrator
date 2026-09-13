@@ -5,12 +5,14 @@ go_library(
     srcs = [
         "main.go",
         "run.go",
+        "serve.go",
     ],
     importpath = "github.com/omargallob/agk-orchestrator/cmd/orchestrator",
     visibility = ["//visibility:private"],
     deps = [
         "//internal/config",
         "//internal/orchestrator",
+        "//internal/server",
     ],
 )
 
