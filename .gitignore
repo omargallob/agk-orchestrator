@@ -30,3 +30,9 @@ go.work.sum
 # Editor/IDE
 # .idea/
 # .vscode/
+
+# Bazel symlinks
+/bazel-*
+
+# Stray Go binary (main package name)
+/orchestrator

@@ -1,0 +1,12 @@
+load("@gazelle//:def.bzl", "gazelle")
+load("@rules_go//go:def.bzl", "nogo")
+
+# gazelle:prefix github.com/omargallob/agk-orchestrator
+gazelle(name = "gazelle")
+
+# Static analyzers run as part of every build/test (first-party only; see nogo scope).
+nogo(
+    name = "nogo",
+    vet = True,
+    visibility = ["//visibility:public"],
+)
