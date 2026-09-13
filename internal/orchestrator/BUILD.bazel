@@ -14,7 +14,10 @@ go_library(
 
 go_test(
     name = "orchestrator_test",
-    srcs = ["orchestrator_test.go"],
+    srcs = [
+        "integration_test.go",
+        "orchestrator_test.go",
+    ],
     embed = [":orchestrator"],
     deps = [
         "//internal/config",
