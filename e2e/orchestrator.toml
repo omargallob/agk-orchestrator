@@ -1,0 +1,23 @@
+# End-to-end config: one reasoning-enabled agent that answers questions about a
+# repo using the read-only list/grep/file tools. The repo root is supplied at
+# runtime (`run --repo <dir>`, or the e2e harness), so this config is repo-agnostic.
+
+[[agents]]
+name     = "assistant"
+provider = "openai"
+model    = "mlx-community/Qwen3-4B-Instruct-2507-8bit"
+base_url = "http://localhost:8080/v1"
+system   = "You are a code assistant. Answer questions about the repository using the list, grep, and file tools. Base every answer only on the repo's contents; do not guess."
+
+  [agents.tools.reasoning]
+  enabled        = true
+  max_iterations = 6
+
+[[workflows]]
+name  = "ask"
+type  = "sequential"
+steps = ["assistant"]
+
+[tools]
+enabled = ["list", "grep", "file"]
+# root is set at runtime (run --repo / the e2e harness).
