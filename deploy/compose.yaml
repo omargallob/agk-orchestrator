@@ -1,0 +1,17 @@
+# Run the orchestrator's HTTP service on the Raspberry Pi.
+# Usage (on the Pi):
+#   cp orchestrator.example.toml orchestrator.toml   # then edit base_url etc.
+#   docker compose up -d
+services:
+  orchestrator:
+    image: ghcr.io/omargallob/agk-orchestrator:latest
+    container_name: agk-orchestrator
+    restart: unless-stopped
+    # The image entrypoint is `orchestrator serve`; these args point it at the
+    # mounted config. Docker pulls the arm64 variant automatically on the Pi.
+    command: ["--config", "/etc/agk/orchestrator.toml", "--addr", ":8090"]
+    volumes:
+      - ./orchestrator.toml:/etc/agk/orchestrator.toml:ro
+    ports:
+      - "8090:8090"
+    pull_policy: always

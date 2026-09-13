@@ -1,0 +1,12 @@
+# Copy to orchestrator.toml and edit base_url to your Mac's LAN address.
+[[agents]]
+name = "assistant"
+provider = "openai"
+model = "mlx-community/Qwen3-4B-Instruct-2507-8bit"
+base_url = "http://mac.local:8080/v1"
+system = "You are concise and helpful."
+
+[[workflows]]
+name = "main"
+type = "sequential"
+steps = ["assistant"]
