@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/omargallob/agk-orchestrator/compare/v0.3.0...v0.4.0) (2026-09-14)
+
+
+### Features
+
+* **tools:** repo-scoped list/grep tools + root sandbox (Milestone B of [#32](https://github.com/omargallob/agk-orchestrator/issues/32)) ([#38](https://github.com/omargallob/agk-orchestrator/issues/38)) ([ae879c5](https://github.com/omargallob/agk-orchestrator/commit/ae879c5150758497e1dc79c16c0e1136dd688a56))
+
 ## [0.3.0](https://github.com/omargallob/agk-orchestrator/compare/v0.2.0...v0.3.0) (2026-09-13)
 
 
