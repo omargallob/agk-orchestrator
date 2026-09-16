@@ -19,3 +19,15 @@ go_test(
     embed = [":e2e"],
     deps = ["//internal/config"],
 )
+
+go_test(
+    name = "e2e_harness_test",
+    srcs = ["harness_test.go"],
+    embed = [":e2e"],
+    gotags = ["e2e"],
+    tags = ["manual"],
+    deps = [
+        "//internal/config",
+        "//internal/orchestrator",
+    ],
+)
