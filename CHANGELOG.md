@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.4.0](https://github.com/omargallob/agk-orchestrator/compare/v0.3.0...v0.4.0) (2026-09-16)
+
+
+### Features
+
+* **e2e:** sample fixture repo + repo-agnostic e2e config ([#39](https://github.com/omargallob/agk-orchestrator/issues/39)) ([ffbaf09](https://github.com/omargallob/agk-orchestrator/commit/ffbaf09867f4160fe9427f63897e009b76d6e2b8))
+* **e2e:** scripted tool-calling harness with live MLX path (Milestone D of [#32](https://github.com/omargallob/agk-orchestrator/issues/32)) ([#41](https://github.com/omargallob/agk-orchestrator/issues/41)) ([c4d0f8f](https://github.com/omargallob/agk-orchestrator/commit/c4d0f8fb61b151eb19696ac4b7dea2f4e428667d))
+* **spec:** added spec kitty ([#43](https://github.com/omargallob/agk-orchestrator/issues/43)) ([4a2841d](https://github.com/omargallob/agk-orchestrator/commit/4a2841da3e8552034c18113578b1289709aa0754))
+* **tools:** repo-scoped list/grep tools + root sandbox (Milestone B of [#32](https://github.com/omargallob/agk-orchestrator/issues/32)) ([#38](https://github.com/omargallob/agk-orchestrator/issues/38)) ([ae879c5](https://github.com/omargallob/agk-orchestrator/commit/ae879c5150758497e1dc79c16c0e1136dd688a56))
+
 ## [0.3.0](https://github.com/omargallob/agk-orchestrator/compare/v0.2.0...v0.3.0) (2026-09-13)
 
 
