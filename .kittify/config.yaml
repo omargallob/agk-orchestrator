@@ -1,0 +1,17 @@
+project:
+  uuid: c2170e1f-bd71-4344-84f9-9091b387a0fc
+  slug: agk-orchestrator
+  node_id: 0e663d56fefd
+  build_id: 302a9925-7d9c-59b9-ac5c-83dba2591830
+mission_type_activations:
+- software-dev
+- documentation
+- research
+- plan
+vcs:
+  type: git
+agents:
+  available:
+  - opencode
+  auto_commit: true
+  lint_on_edit: false
