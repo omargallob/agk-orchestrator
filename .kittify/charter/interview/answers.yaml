@@ -1,0 +1,21 @@
+schema_version: 1.0.0
+mission: software-dev
+profile: comprehensive
+answers:
+  project_intent: "Provide an easy way to create different personas/agents with different models and tools depending on the use case, using a TOML configuration format. The system should enable rapid agent creation and deployment for various operational scenarios."
+  languages_frameworks: "TOML configuration files for agent definitions and workflows. Uses AgenticGoKit v1beta with OpenAI-compatible adapters for MLX models."
+  testing_requirements: "All agent configurations must pass validation checks for required fields (provider, model, base_url) and referential integrity. Configuration files must be validated before deployment."
+  quality_gates: "All agent configurations must pass validation checks for required fields (provider, model, base_url) and referential integrity. Configuration files must be validated before deployment."
+  review_policy: "All agent changes must be reviewed and approved through the standard PR process with conventional commits. Changes to agent configurations must be documented in the CHANGELOG."
+  performance_targets: "Agents must respond within 5 seconds for simple queries and within 10 seconds for complex tool-calling workflows."
+  deployment_constraints: "Agents must be deployed through the standard Bazel build and test process. No direct code changes to the agent configuration files are allowed without going through the PR process."
+  documentation_policy: "All agent configurations must be documented in the AGENTS.md file. Changes to agent configurations must be reflected in the CHANGELOG."
+  risk_boundaries: "System/node downtime is the primary risk. The system must have automated monitoring and alerting to detect and respond to node failures."
+  amendment_process: "Changes to agent configurations must be proposed through a PR and reviewed by at least one other team member. Changes must be documented in the CHANGELOG."
+  exception_policy: "In the case of system/node downtime, the system should automatically trigger a recovery process and notify the operations team."
+selected_paradigms:
+  - configuration-first
+selected_directives:
+  - DIRECTIVE_001
+available_tools:
+  - git

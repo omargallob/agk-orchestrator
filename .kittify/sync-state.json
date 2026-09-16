@@ -1,0 +1,19 @@
+{
+  "last_saas_confirmed_hash": null,
+  "pending_local_commits": [
+    {
+      "type": "LocalCommit",
+      "git_hash": "d5ea068eba75ecf178414e78920ab4b8d794a125",
+      "mission_id": "linting-lint-01M2JEBX",
+      "build_id": "2671b556-4fa1-5e8f-a91c-1f3f7e57062d",
+      "project_uuid": "69077475-4ebf-45a6-9e84-e5f128b314a0",
+      "changed_files": [
+        "kitty-specs/linting-lint-01M2JEBX/meta.json",
+        "kitty-specs/linting-lint-01M2JEBX/status.events.jsonl",
+        "kitty-specs/linting-lint-01M2JEBX/tasks/README.md",
+        "kitty-specs/linting-lint-01M2JEBX/tasks/.gitkeep"
+      ],
+      "committed_at": "2026-09-15T11:48:49.897800+00:00"
+    }
+  ]
+}
